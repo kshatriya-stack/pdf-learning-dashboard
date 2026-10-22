@@ -43,8 +43,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadDay(store.currentDay);
     renderAllViews();
   } catch (err) {
-    console.error('Initialization error:', err);
-    showToast('Failed to load curriculum manifest. Ensure backend is running.', 'error');
+    console.error('Initialization attempt 1 failed:', err);
+    // Automatic retry after 1 second in case backend was starting up
+    setTimeout(async () => {
+      try {
+        await fetchCurriculum();
+        initRouter();
+        await loadDay(store.currentDay);
+        renderAllViews();
+        showToast('Curriculum connected successfully!', 'success');
+      } catch (retryErr) {
+        console.error('Curriculum load failed:', retryErr);
+        showToast('Could not load curriculum data. Please ensure backend is running on port 3001.', 'error');
+      }
+    }, 1000);
   }
 });
 
@@ -159,35 +171,68 @@ function updateTopbarMetrics() {
 // ----------------------------------------------------
 // CURRICULUM API CALLS
 // ----------------------------------------------------
-async function fetchCurriculum() {
-  const res = await fetch('/api/curriculum');
-  if (!res.ok) throw new Error('Could not fetch curriculum');
-  store.curriculum = await res.json();
-  
-  const modBadge = document.getElementById('navModuleCountBadge');
-  if (modBadge) modBadge.textContent = `${store.curriculum.modules.length} Mods`;
+async function fetchCurriculum(retries = 3, delayMs = 600) {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch('/api/curriculum');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `HTTP ${res.status}`);
+      }
+      store.curriculum = await res.json();
+      
+      const modBadge = document.getElementById('navModuleCountBadge');
+      if (modBadge) modBadge.textContent = `${store.curriculum.modules.length} Mods`;
 
-  populateDayJumpSelect();
-  populateModuleFilters();
+      populateDayJumpSelect();
+      populateModuleFilters();
+      return store.curriculum;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[Curriculum] Fetch attempt ${attempt} failed:`, err.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, delayMs * attempt));
+      }
+    }
+  }
+  throw lastErr || new Error('Could not fetch curriculum');
 }
 
-async function fetchDayDetail(dayNum) {
+async function fetchDayDetail(dayNum, retries = 3, delayMs = 500) {
   if (store.dayCache[dayNum]) {
     return store.dayCache[dayNum];
   }
-  const res = await fetch(`/api/day/${dayNum}`);
-  if (!res.ok) throw new Error(`Could not fetch day ${dayNum}`);
-  const data = await res.json();
-  store.dayCache[dayNum] = data;
-  return data;
+  let lastErr = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(`/api/day/${dayNum}`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      store.dayCache[dayNum] = data;
+      return data;
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[DayDetail] Fetch attempt ${attempt} for Day ${dayNum} failed:`, err.message);
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, delayMs * attempt));
+      }
+    }
+  }
+  throw lastErr || new Error(`Could not fetch day ${dayNum}`);
 }
 
 async function loadDay(dayNum) {
   store.currentDay = dayNum;
   localStorage.setItem('aerolearn_active_day', dayNum);
   
-  document.getElementById('navTodayBadge').textContent = `Day ${dayNum}`;
-  document.getElementById('dayJumpSelect').value = dayNum;
+  const todayBadge = document.getElementById('navTodayBadge');
+  if (todayBadge) todayBadge.textContent = `Day ${dayNum}`;
+  const daySelect = document.getElementById('dayJumpSelect');
+  if (daySelect) daySelect.value = dayNum;
   
   const data = await fetchDayDetail(dayNum);
   store.currentDayData = data;
@@ -795,10 +840,23 @@ function renderDayInterviews(questions) {
 // ----------------------------------------------------
 function renderCurriculumView() {
   const container = document.getElementById('curriculumModulesContainer');
-  if (!container || !store.curriculum) return;
+  if (!container) return;
 
-  const modFilter = document.getElementById('curriculumModuleFilter').value;
-  const statusFilter = document.getElementById('curriculumStatusFilter').value;
+  if (!store.curriculum || !store.curriculum.modules || store.curriculum.modules.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state card p-4 text-center">
+        <h3>Curriculum Manifest Loading...</h3>
+        <p class="text-muted">Fetching 60-day syllabus modules from server.</p>
+        <button class="btn btn-primary mt-3" onclick="window.retryLoadCurriculum()">Click to Load / Retry</button>
+      </div>
+    `;
+    // Attempt auto-recovery
+    fetchCurriculum().then(() => renderCurriculumView()).catch(console.error);
+    return;
+  }
+
+  const modFilter = document.getElementById('curriculumModuleFilter')?.value || 'all';
+  const statusFilter = document.getElementById('curriculumStatusFilter')?.value || 'all';
 
   const modules = store.curriculum.modules.filter(m => {
     if (modFilter !== 'all' && m.id !== modFilter) return false;
@@ -822,7 +880,9 @@ function renderCurriculumView() {
     const daysCardsHtml = filteredDays.map(d => {
       const isDone = store.userState.completedDays.includes(d.day);
       const isCurrent = d.day === store.currentDay;
-      const statusPill = isDone ? '<span class="badge badge-success">Completed ✓</span>' : (isCurrent ? '<span class="badge badge-accent">Current Day</span>' : '<span class="badge">Pending</span>');
+      const statusPill = isDone 
+        ? '<span class="badge badge-success">Completed ✓</span>' 
+        : (isCurrent ? '<span class="badge badge-accent">Current Day</span>' : '<span class="badge">Pending</span>');
 
       const pdfTags = (d.pdfReferences || []).map(r => {
         const tagClass = r.pdf.toLowerCase().includes('azure') ? 'tag-pdf1' : 'tag-pdf2';
@@ -830,7 +890,12 @@ function renderCurriculumView() {
       }).join(' ');
 
       return `
-        <div class="curriculum-day-card ${isDone ? 'done' : ''} ${isCurrent ? 'active' : ''}" onclick="window.jumpToDay(${d.day})">
+        <div class="curriculum-day-card ${isDone ? 'done' : ''} ${isCurrent ? 'active' : ''}" 
+             role="button" 
+             tabindex="0"
+             onclick="window.jumpToDay(${d.day})" 
+             onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); window.jumpToDay(${d.day}); }"
+             title="Open Day ${d.day}: ${escapeHtml(d.title)}">
           <div class="day-card-header">
             <span class="day-number">Day ${d.day}</span>
             ${statusPill}
@@ -840,7 +905,9 @@ function renderCurriculumView() {
           <div class="day-card-footer">
             <span>⏱️ ${d.duration}</span>
             <span>🎯 ${d.quizCount || 3} Quizzes</span>
-            <span class="link-arrow">&rarr;</span>
+            <button class="btn btn-sm btn-primary day-open-btn" onclick="event.stopPropagation(); window.jumpToDay(${d.day})">
+              Study Day ${d.day} &rarr;
+            </button>
           </div>
         </div>
       `;
@@ -861,7 +928,7 @@ function renderCurriculumView() {
             </div>
           </div>
         </div>
-        <div class="module-days-grid">${daysCardsHtml || '<p class="text-muted p-3">No days match filter.</p>'}</div>
+        <div class="module-days-grid">${daysCardsHtml || '<p class="text-muted p-3">No days match selected filter.</p>'}</div>
       </div>
     `;
   }).join('');
@@ -1410,8 +1477,39 @@ function renderSettingsView() {
 // USER ACTIONS & HELPERS
 // ----------------------------------------------------
 window.jumpToDay = async function(dayNum) {
-  await loadDay(dayNum);
-  window.appRouter('today');
+  const d = parseInt(dayNum, 10);
+  if (isNaN(d) || d < 1 || d > 60) return;
+
+  try {
+    // Instant visual switch to today's view
+    switchView('today');
+    window.location.hash = '#today';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    await loadDay(d);
+  } catch (err) {
+    console.error(`Error navigating to Day ${d}:`, err);
+    showToast(`Loading Day ${d}...`, 'info');
+    try {
+      if (!store.curriculum) await fetchCurriculum();
+      await loadDay(d);
+    } catch (retryErr) {
+      showToast(`Could not load Day ${d}: ${retryErr.message}`, 'error');
+    }
+  }
+};
+
+window.retryLoadCurriculum = async function() {
+  showToast('Connecting to curriculum manifest...', 'info');
+  try {
+    await fetchCurriculum();
+    initRouter();
+    await loadDay(store.currentDay);
+    renderAllViews();
+    showToast('Curriculum loaded successfully!', 'success');
+  } catch (err) {
+    showToast(`Failed to connect: ${err.message}. Please verify the server is running on port 3001.`, 'error');
+  }
 };
 
 window.jumpToDayQuiz = async function(dayNum) {
@@ -1662,6 +1760,10 @@ function setupGlobalEvents() {
 
   // Overview track module filter
   document.getElementById('overviewTrackModFilter')?.addEventListener('change', renderOverviewDaysStrip);
+
+  // Curriculum view filters
+  document.getElementById('curriculumModuleFilter')?.addEventListener('change', renderCurriculumView);
+  document.getElementById('curriculumStatusFilter')?.addEventListener('change', renderCurriculumView);
 
   // Focus title quick click
   document.getElementById('overviewFocusTitle')?.addEventListener('click', () => window.jumpToDay(store.currentDay));

@@ -1949,6 +1949,24 @@ a:hover {
   border-top: 1px solid var(--border-subtle);
 }
 
+.day-open-btn {
+  padding: 0.28rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-left: auto;
+}
+
+.day-open-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
 /* Calendar Grid */
 .calendar-layout {
   display: grid;

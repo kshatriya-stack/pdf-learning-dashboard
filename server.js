@@ -34,17 +34,27 @@ app.use(express.json({ limit: '2mb' }));
 const curriculumPath = path.join(__dirname, 'data', 'curriculum.json');
 let curriculumData = null;
 
-try {
-  if (fs.existsSync(curriculumPath)) {
-    const raw = fs.readFileSync(curriculumPath, 'utf-8');
-    curriculumData = JSON.parse(raw);
-    console.log(`[Curriculum] Successfully loaded ${curriculumData.modules?.length || 0} modules and ${curriculumData.days?.length || 0} days from curriculum.json.`);
-  } else {
-    console.warn(`[Curriculum] curriculum.json not found at ${curriculumPath}. Run 'node generate_curriculum.js' first.`);
+function getCurriculumData() {
+  if (curriculumData && curriculumData.days && curriculumData.days.length > 0) {
+    return curriculumData;
   }
-} catch (err) {
-  console.error('[Curriculum] Error parsing curriculum.json:', err.message);
+  try {
+    if (fs.existsSync(curriculumPath)) {
+      const raw = fs.readFileSync(curriculumPath, 'utf-8');
+      curriculumData = JSON.parse(raw);
+      console.log(`[Curriculum] Successfully loaded ${curriculumData.modules?.length || 0} modules and ${curriculumData.days?.length || 0} days from curriculum.json.`);
+      return curriculumData;
+    } else {
+      console.warn(`[Curriculum] curriculum.json not found at ${curriculumPath}.`);
+    }
+  } catch (err) {
+    console.error('[Curriculum] Error reading/parsing curriculum.json:', err.message);
+  }
+  return null;
 }
+
+// Initial eager load
+getCurriculumData();
 
 // Serve Frontend Static Files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -55,27 +65,29 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 1. Health Status
 app.get('/api/health', (req, res) => {
+  const curr = getCurriculumData();
   res.json({
     status: 'ok',
     version: '1.0.0',
     port: PORT,
-    curriculumLoaded: !!curriculumData,
-    totalModules: curriculumData?.modules?.length || 0,
-    totalDays: curriculumData?.days?.length || 0,
+    curriculumLoaded: !!curr,
+    totalModules: curr?.modules?.length || 0,
+    totalDays: curr?.days?.length || 0,
     aiConfigured: Boolean(geminiClient),
     model: GEMINI_MODEL,
-    authoritativeSources: curriculumData?.metadata?.authoritativeSources || []
+    authoritativeSources: curr?.metadata?.authoritativeSources || []
   });
 });
 
 // 2. Full Curriculum Manifest / Summary
 app.get('/api/curriculum', (req, res) => {
-  if (!curriculumData) {
+  const curr = getCurriculumData();
+  if (!curr) {
     return res.status(503).json({ error: 'Curriculum data not loaded.' });
   }
 
   // Return curriculum metadata, modules, and lightweight day summaries
-  const daySummaries = (curriculumData.days || []).map(d => ({
+  const daySummaries = (curr.days || []).map(d => ({
     day: d.day,
     moduleId: d.moduleId,
     moduleName: d.moduleName,
@@ -91,15 +103,16 @@ app.get('/api/curriculum', (req, res) => {
   }));
 
   res.json({
-    metadata: curriculumData.metadata,
-    modules: curriculumData.modules,
+    metadata: curr.metadata,
+    modules: curr.modules,
     days: daySummaries
   });
 });
 
 // 3. Single Day Details
 app.get('/api/day/:id', (req, res) => {
-  if (!curriculumData) {
+  const curr = getCurriculumData();
+  if (!curr) {
     return res.status(503).json({ error: 'Curriculum data not loaded.' });
   }
 
@@ -108,7 +121,7 @@ app.get('/api/day/:id', (req, res) => {
     return res.status(400).json({ error: 'Invalid day parameter.' });
   }
 
-  const dayData = curriculumData.days?.find(d => d.day === dayId);
+  const dayData = curr.days?.find(d => d.day === dayId);
   if (!dayData) {
     return res.status(404).json({ error: `Day ${dayId} not found in curriculum.` });
   }
@@ -118,12 +131,13 @@ app.get('/api/day/:id', (req, res) => {
 
 // 3b. Download Plain Text Study Guide for Single Day
 app.get('/api/day/:id/text', (req, res) => {
-  if (!curriculumData) {
+  const curr = getCurriculumData();
+  if (!curr) {
     return res.status(503).json({ error: 'Curriculum data not loaded.' });
   }
 
   const dayId = parseInt(req.params.id, 10);
-  const dayData = curriculumData.days?.find(d => d.day === dayId);
+  const dayData = curr.days?.find(d => d.day === dayId);
   if (!dayData) {
     return res.status(404).send(`Day ${dayId} not found.`);
   }
@@ -141,12 +155,13 @@ app.get('/api/search', (req, res) => {
     return res.json({ results: [] });
   }
 
-  if (!curriculumData) {
+  const curr = getCurriculumData();
+  if (!curr) {
     return res.status(503).json({ error: 'Curriculum data not loaded.' });
   }
 
   const results = [];
-  for (const day of (curriculumData.days || [])) {
+  for (const day of (curr.days || [])) {
     let score = 0;
     const matches = [];
 
@@ -208,7 +223,8 @@ app.post('/api/ai/ask', async (req, res) => {
     return res.status(400).json({ error: 'Question is required.' });
   }
 
-  const dayData = curriculumData?.days?.find(d => d.day === parseInt(dayNumber, 10));
+  const curr = getCurriculumData();
+  const dayData = curr?.days?.find(d => d.day === parseInt(dayNumber, 10));
   const topicTitle = dayData ? dayData.title : 'Azure Data Engineering & Power BI Analytics';
   const pdfSources = dayData?.pdfReferences?.map(r => `${r.pdf} (page ${r.page})`).join(', ') || 'Course PDFs';
   const coreConcepts = dayData?.topicExplanation?.coreConcepts?.join('\n- ') || 'Fundamental engineering concepts';
