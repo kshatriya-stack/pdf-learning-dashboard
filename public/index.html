@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroLearn OS | PDF-Grounded Data Engineering & Power BI Learning System</title>
+  <meta name="description" content="Personal daily learning operating system strictly grounded in Azure Data Engineering (19 pages) and Data Analytics Using Power BI (24 pages) curriculums.">
+  
+  <!-- Modern Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Layout -->
+  <div class="app-layout">
+    
+    <!-- Sidebar -->
+    <aside class="app-sidebar" id="appSidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="brand-info">
+            <span class="brand-title">AeroLearn OS</span>
+            <span class="brand-sub">PDF-Grounded Curriculum</span>
+          </div>
+        </div>
+        <button class="icon-btn sidebar-toggle" id="sidebarToggle" title="Toggle Sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- Live Search Box -->
+      <div class="sidebar-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="globalSearchInput" placeholder="Search 60 topics & notes..." autocomplete="off">
+        <span class="search-kbd">/</span>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">DAILY WORKSPACE</div>
+        <a href="#overview" class="nav-item active" data-view="overview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span>Dashboard Overview</span>
+        </a>
+        <a href="#today" class="nav-item" data-view="today">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Today's Learning</span>
+          <span class="badge badge-accent" id="navTodayBadge">Day 1</span>
+        </a>
+        <a href="#calendar" class="nav-item" data-view="calendar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Learning Calendar</span>
+        </a>
+
+        <div class="nav-section-label">CURRICULUM & KNOWLEDGE</div>
+        <a href="#curriculum" class="nav-item" data-view="curriculum">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>Complete Curriculum</span>
+          <span class="badge" id="navModuleCountBadge">10 Mods</span>
+        </a>
+        <a href="#library" class="nav-item" data-view="library">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          <span>Topic Library</span>
+        </a>
+        <a href="#notes" class="nav-item" data-view="notes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Notes & Knowledge</span>
+          <span class="badge" id="navNotesCountBadge">0</span>
+        </a>
+        <a href="#bookmarks" class="nav-item" data-view="bookmarks">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span>Bookmarks & Resources</span>
+        </a>
+
+        <div class="nav-section-label">PRACTICE & INTERVIEWS</div>
+        <a href="#revision" class="nav-item" data-view="revision">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>Revision Centre</span>
+          <span class="badge badge-warning" id="navRevisionDueBadge">Due: 0</span>
+        </a>
+        <a href="#quizzes" class="nav-item" data-view="quizzes">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Practice & Quizzes</span>
+        </a>
+        <a href="#interviews" class="nav-item" data-view="interviews">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Interview Prep</span>
+        </a>
+        <a href="#projects" class="nav-item" data-view="projects">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>Projects & Portfolio</span>
+        </a>
+
+        <div class="nav-section-label">SYSTEM & INSIGHTS</div>
+        <a href="#analytics" class="nav-item" data-view="analytics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Progress Analytics</span>
+        </a>
+        <a href="#settings" class="nav-item" data-view="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings & Backup</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Footer / Authoritative Badge -->
+      <div class="sidebar-footer">
+        <div class="pdf-badge-card">
+          <div class="pdf-badge-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          </div>
+          <div class="pdf-badge-text">
+            <strong>Authoritative Source</strong>
+            <span>2 PDFs &bull; 43 Pages Grounded</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      
+      <!-- Top Navigation Bar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="breadcrumbs" id="topbarBreadcrumbs">
+            <span class="crumb-root">AeroLearn</span>
+            <span class="crumb-separator">/</span>
+            <span class="crumb-current" id="currentViewTitle">Dashboard Overview</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Study Timer Widget -->
+          <div class="timer-widget" id="studyTimerWidget">
+            <button class="timer-btn" id="timerToggleBtn" title="Start/Pause Study Session Timer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <span class="timer-display" id="timerDisplay">00:00:00</span>
+            <span class="timer-label">Today's Study</span>
+          </div>
+
+          <!-- Streak Pill -->
+          <div class="streak-pill" title="Daily study streak">
+            <span class="streak-icon">🔥</span>
+            <span class="streak-count" id="topbarStreakCount">0</span>
+            <span class="streak-label">days</span>
+          </div>
+
+          <!-- AI Assistant Trigger -->
+          <button class="btn btn-ai" id="openAiDrawerBtn" title="Open AI Learning Assistant">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            <span>Ask AI Tutor</span>
+          </button>
+
+          <!-- Theme Toggle -->
+          <button class="icon-btn" id="themeToggleBtn" title="Toggle Light/Dark Theme">
+            <svg class="theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Search Results Overlay Container (hidden by default) -->
+      <div class="search-overlay-container" id="searchOverlayContainer" style="display:none;">
+        <div class="search-results-panel">
+          <div class="search-panel-header">
+            <h3>Search Results for: <span id="searchQueryEcho"></span></h3>
+            <button class="icon-btn" id="closeSearchOverlay">&times;</button>
+          </div>
+          <div class="search-results-list" id="searchResultsList"></div>
+        </div>
+      </div>
+
+      <!-- Views Container -->
+      <div class="view-content" id="viewContent">
+        
+        <!-- 1. DASHBOARD OVERVIEW VIEW -->
+        <section class="app-view active" id="view-overview">
+          <!-- Hero Banner -->
+          <div class="hero-banner">
+            <div class="hero-text">
+              <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Authoritative Curriculum Operating System</span>
+              </div>
+              <h1 class="hero-title" id="overviewGreeting">Welcome to AeroLearn OS</h1>
+              <p class="hero-sub" id="overviewSub">
+                Grounded in <strong>Azure Data Engineering (6 Mo)</strong> and <strong>Data Analytics Using Power BI (3 Mo)</strong>.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary" id="overviewStartLearningBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span id="overviewStartLearningLabel">Start Day 1</span>
+                </button>
+                <button class="btn btn-secondary" onclick="window.appRouter('curriculum')">
+                  Explore Full Curriculum (60 Days)
+                </button>
+                <button class="btn btn-outline" onclick="window.openResourceFinder()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                  Resource Finder
+                </button>
+              </div>
+            </div>
+            
+            <div class="hero-stats-card">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="120" height="120">
+                  <circle class="progress-ring-circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                  <circle class="progress-ring-circle" id="overviewProgressCircle" stroke="var(--primary)" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" stroke-linecap="round" fill="transparent" r="50" cx="60" cy="60"/>
+                </svg>
+                <div class="progress-ring-text">
+                  <span class="progress-pct" id="overviewProgressPct">0%</span>
+                  <span class="progress-label">Complete</span>
+                </div>
+              </div>
+              <div class="hero-progress-details">
+                <div class="stat-row">
+                  <span class="stat-dot dot-completed"></span>
+                  <span>Completed:</span>
+                  <strong id="statCompletedDays">0 / 60</strong>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-dot dot-progress"></span>
+                  <span>Current Day:</span>
+                  <strong id="statCurrentDay">Day 1</strong>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-dot dot-revision"></span>
+                  <span>Due for Revision:</span>
+                  <strong id="statRevisionCount">0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Metrics Bar -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-icon">🔥</span>
+                <span class="metric-trend positive">+1 Today</span>
+              </div>
+              <div class="metric-value" id="metricStreak">0 Days</div>
+              <div class="metric-label">Daily Study Streak</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-icon">⏱️</span>
+                <span class="metric-trend" id="metricTimeTrend">Active</span>
+              </div>
+              <div class="metric-value" id="metricStudyHours">0.0 hrs</div>
+              <div class="metric-label">Total Time Invested</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-icon">🎯</span>
+                <span class="metric-trend positive" id="metricQuizTrend">100% Target</span>
+              </div>
+              <div class="metric-value" id="metricQuizAvg">0%</div>
+              <div class="metric-label">Knowledge Check Avg</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-icon">📝</span>
+                <span class="metric-trend" id="metricNotesTrend">Saved</span>
+              </div>
+              <div class="metric-value" id="metricNotesCount">0</div>
+              <div class="metric-label">Study Notes Created</div>
+            </div>
+          </div>
+
+          <!-- Today's Focus Card & Quick Action Grid -->
+          <div class="overview-split-grid">
+            <!-- Left: Today's Action Card -->
+            <div class="card focus-card">
+              <div class="card-header">
+                <div class="header-tag">TODAY'S SCHEDULED LESSON</div>
+                <div class="card-actions">
+                  <span class="badge badge-accent" id="overviewDayPill">Day 1 of 60</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="focus-module" id="overviewFocusModule">Module 1: Relational Database Architecture & SQL Server / T-SQL</div>
+                <h2 class="focus-title" id="overviewFocusTitle">Database Fundamentals, DBMS Types & SQL Server Architecture</h2>
+                
+                <div class="pdf-pill-row" id="overviewPdfPills">
+                  <span class="pdf-tag tag-pdf1">Azure Data Eng &bull; p.9</span>
+                  <span class="pdf-tag tag-pdf2">Power BI &bull; p.14</span>
+                </div>
+
+                <div class="callout callout-8020">
+                  <div class="callout-icon">⚡</div>
+                  <div class="callout-text">
+                    <strong>The 80/20 Rule:</strong>
+                    <span id="overview8020Text">Databases organize data into 8KB physical storage pages grouped into 64KB extents. Write operations hit the transaction log (.ldf) first before committing to data files (.mdf), guaranteeing ACID reliability.</span>
+                  </div>
+                </div>
+
+                <div class="daily-checklist-preview">
+                  <h4>Daily Objectives Checklist:</h4>
+                  <ul class="task-checklist" id="overviewChecklist">
+                    <!-- Populated dynamically -->
+                  </ul>
+                </div>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-primary" onclick="window.appRouter('today')">
+                  Open Lesson Workspace &rarr;
+                </button>
+                <button class="btn btn-secondary" onclick="window.openDayQuiz()">
+                  Take Day Quiz
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Upcoming & Module Mastery -->
+            <div class="card right-sidebar-card">
+              <div class="card-header">
+                <div class="header-tag">CURRICULUM BREAKDOWN</div>
+                <a href="#curriculum" class="link-small">View All 10 &rarr;</a>
+              </div>
+              <div class="card-body">
+                <div class="module-mini-list" id="overviewModuleList">
+                  <!-- Populated by JavaScript -->
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="quick-links-row">
+                  <button class="btn btn-sm btn-ghost" onclick="window.appRouter('interviews')">Mock Interview</button>
+                  <button class="btn btn-sm btn-ghost" onclick="window.appRouter('projects')">Portfolio Projects</button>
+                  <button class="btn btn-sm btn-ghost" onclick="window.appRouter('revision')">Spaced Revision</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. TODAY'S LEARNING / DAY VIEW -->
+        <section class="app-view" id="view-today">
+          <!-- Lesson Header -->
+          <div class="lesson-header-card">
+            <div class="lesson-meta-bar">
+              <div class="meta-left">
+                <span class="badge badge-primary" id="dayPill">Day 1</span>
+                <span class="badge badge-outline" id="dayDuration">4 hours</span>
+                <span class="badge badge-module" id="dayModuleName">Module 1</span>
+              </div>
+              <div class="meta-right">
+                <div class="pdf-sources-inline" id="dayPdfSources">
+                  <!-- Generated PDF tags -->
+                </div>
+                <div class="lesson-nav-buttons">
+                  <button class="icon-btn" id="prevDayBtn" title="Previous Day">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  <span class="day-jump-wrapper">
+                    <select id="dayJumpSelect" class="day-select"></select>
+                  </span>
+                  <button class="icon-btn" id="nextDayBtn" title="Next Day">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <h1 class="lesson-main-title" id="dayTitle">Database Fundamentals, DBMS Types & SQL Server Architecture</h1>
+            
+            <div class="lesson-quick-actions">
+              <button class="btn btn-success" id="markDayCompleteBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span id="markDayCompleteLabel">Mark Lesson Complete</span>
+              </button>
+              <button class="btn btn-secondary" id="bookmarkDayBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                <span id="bookmarkDayLabel">Bookmark Day</span>
+              </button>
+              <button class="btn btn-outline" id="scheduleRevisionBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                <span>Add to Revision Queue</span>
+              </button>
+              <button class="btn btn-ai" onclick="window.askAiAboutCurrentDay()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                <span>Ask AI About This Day</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Day Content Tabs -->
+          <div class="day-tabs-bar">
+            <button class="day-tab active" data-tab="tab-study">📖 Core Study Notes</button>
+            <button class="day-tab" data-tab="tab-expert">🧠 80/20 & Expert Insights</button>
+            <button class="day-tab" data-tab="tab-resources">🔗 Multi-Lingual Resources</button>
+            <button class="day-tab" data-tab="tab-quiz">🎯 Knowledge Check Quiz</button>
+            <button class="day-tab" data-tab="tab-interview">💼 Interview Practice</button>
+            <button class="day-tab" data-tab="tab-notes">✍️ My Personal Notes</button>
+          </div>
+
+          <!-- TAB 1: CORE STUDY NOTES -->
+          <div class="day-tab-pane active" id="tab-study">
+            <div class="study-doc-layout">
+              <div class="study-doc-body">
+                
+                <!-- Section A & B: What and Why -->
+                <div class="content-block">
+                  <h3 class="section-heading">A. What is this topic?</h3>
+                  <p class="section-p" id="dayWhatIsIt"></p>
+                </div>
+
+                <div class="content-block">
+                  <h3 class="section-heading">B. Why should I learn it?</h3>
+                  <p class="section-p" id="dayWhyLearnIt"></p>
+                </div>
+
+                <!-- Section C: Measurable Learning Objectives -->
+                <div class="content-block">
+                  <h3 class="section-heading">C. Learning Objectives</h3>
+                  <ul class="styled-list" id="dayObjectivesList"></ul>
+                </div>
+
+                <!-- Section D: Prerequisites -->
+                <div class="content-block">
+                  <h3 class="section-heading">D. Prerequisites</h3>
+                  <div class="prereq-box" id="dayPrerequisitesBox"></div>
+                </div>
+
+                <!-- Section E: Core Concepts -->
+                <div class="content-block">
+                  <h3 class="section-heading">E. Core Syllabus Concepts</h3>
+                  <div class="concept-cards-grid" id="dayCoreConceptsGrid"></div>
+                </div>
+
+                <!-- Section F: Technical Details -->
+                <div class="content-block">
+                  <h3 class="section-heading">F. Important Technical Details</h3>
+                  <div class="tech-details-box" id="dayTechDetails"></div>
+                </div>
+
+                <!-- Section G: Real-World Application -->
+                <div class="content-block">
+                  <h3 class="section-heading">G. Real-World Enterprise Scenario</h3>
+                  <div class="scenario-box" id="dayRealWorldApp"></div>
+                </div>
+
+                <!-- Section H: Common Mistakes -->
+                <div class="content-block">
+                  <h3 class="section-heading">H. Common Mistakes & Pitfalls</h3>
+                  <div class="warning-callout" id="dayCommonMistakes"></div>
+                </div>
+
+                <!-- Section I: Quick Revision -->
+                <div class="content-block">
+                  <h3 class="section-heading">I. Quick Revision & Key Takeaways</h3>
+                  <div class="revision-summary-box" id="dayQuickRevision"></div>
+                </div>
+
+                <!-- Section J: What You Should Be Able to Do Now -->
+                <div class="content-block">
+                  <h3 class="section-heading">J. Practical Completion Criterion</h3>
+                  <div class="completion-criterion-box" id="dayCompletionCriterion"></div>
+                </div>
+              </div>
+
+              <!-- Sticky In-Lesson Progress / TOC -->
+              <aside class="study-doc-sidebar">
+                <div class="sticky-card">
+                  <h4>Today's Tasks</h4>
+                  <div class="day-task-checklist" id="dayTaskChecklist"></div>
+                  
+                  <hr class="divider">
+                  <h4>Deliverable</h4>
+                  <p class="small-text" id="dayDeliverableText"></p>
+                  
+                  <button class="btn btn-sm btn-primary btn-block mt-3" onclick="window.markCurrentDayTasksComplete()">
+                    Complete All Tasks
+                  </button>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <!-- TAB 2: 80/20 & EXPERT INSIGHTS -->
+          <div class="day-tab-pane" id="tab-expert">
+            <div class="expert-insights-wrapper">
+              <div class="callout callout-large callout-8020">
+                <div class="callout-badge">THE 80/20 KNOWLEDGE</div>
+                <h2>The 20% of Concepts Delivering 80% of Real-World Value</h2>
+                <p class="expert-lead" id="expert8020Content"></p>
+              </div>
+
+              <div class="callout callout-large callout-expert mt-4">
+                <div class="callout-badge">WHAT EXPERTS UNDERSTAND</div>
+                <h2>Architectural Principles, Production Trade-offs & Edge Cases</h2>
+                <p class="expert-lead" id="expertDeepContent"></p>
+              </div>
+
+              <div class="expert-checklist-box mt-4">
+                <h3>Mastery Self-Checklist</h3>
+                <ul class="styled-list" id="expertChecklist">
+                  <li>Can you explain this topic to a non-technical stakeholder without buzzwords?</li>
+                  <li>Can you diagram the data flow and storage mechanics on a whiteboard?</li>
+                  <li>Do you know the cost, performance, and scaling limits of this approach?</li>
+                  <li>Can you identify what happens when an upstream component fails?</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 3: MULTI-LINGUAL RESOURCES -->
+          <div class="day-tab-pane" id="tab-resources">
+            <div class="resources-wrapper">
+              <div class="resources-toolbar">
+                <div class="filter-group">
+                  <span class="filter-label">Language:</span>
+                  <button class="filter-chip active" data-lang="All">All Languages</button>
+                  <button class="filter-chip" data-lang="English">English</button>
+                  <button class="filter-chip" data-lang="Hindi">Hindi / Hinglish</button>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.openResourceFinder()">
+                  + Find More Resources
+                </button>
+              </div>
+
+              <div class="resources-grid" id="dayResourcesGrid">
+                <!-- Dynamically populated resource cards -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: KNOWLEDGE CHECK QUIZ -->
+          <div class="day-tab-pane" id="tab-quiz">
+            <div class="quiz-wrapper">
+              <div class="quiz-header-banner">
+                <div>
+                  <h2>Daily Knowledge Check</h2>
+                  <p>3 authoritative questions strictly grounded in today's PDF topics.</p>
+                </div>
+                <div class="quiz-score-badge" id="dayQuizScoreBadge">Score: -- / 3</div>
+              </div>
+
+              <div class="quiz-questions-list" id="dayQuizList">
+                <!-- Dynamically populated MCQs with instant feedback -->
+              </div>
+
+              <div class="quiz-actions-footer">
+                <button class="btn btn-outline" id="retakeQuizBtn">Reset & Retake Quiz</button>
+                <button class="btn btn-primary" onclick="window.appRouter('quizzes')">View Quiz History &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: INTERVIEW PREPARATION -->
+          <div class="day-tab-pane" id="tab-interview">
+            <div class="interview-wrapper">
+              <div class="interview-header-banner">
+                <div>
+                  <h2>Topic Interview Question Bank</h2>
+                  <p>High-yield technical and scenario questions tested by enterprise recruiters.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.startMockInterviewForCurrentDay()">
+                  Launch Interactive Mock Interview
+                </button>
+              </div>
+
+              <div class="interview-questions-list" id="dayInterviewList">
+                <!-- Progressive reveal interview question cards -->
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 6: PERSONAL NOTES EDITOR -->
+          <div class="day-tab-pane" id="tab-notes">
+            <div class="notes-editor-container">
+              <div class="notes-toolbar">
+                <div class="notes-status" id="notesAutoSaveStatus">
+                  <span class="save-indicator"></span> Auto-saved to local storage
+                </div>
+                <div class="notes-actions">
+                  <button class="btn btn-sm btn-outline" id="copyNotesBtn">Copy Notes</button>
+                  <button class="btn btn-sm btn-outline" id="downloadNotesBtn">Export Markdown</button>
+                  <button class="btn btn-sm btn-primary" id="saveNotesManualBtn">Save Now</button>
+                </div>
+              </div>
+              <textarea class="notes-textarea" id="dayNotesTextarea" placeholder="Write your personal insights, code snippets, project reminders, and study notes for today's lesson..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. COMPLETE CURRICULUM VIEW -->
+        <section class="app-view" id="view-curriculum">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Authoritative Course Curriculum</h1>
+              <p class="page-subtitle">10 Modules &bull; 60 Sequenced Days &bull; 100% Grounded in Uploaded Syllabi</p>
+            </div>
+            <div class="curriculum-filters">
+              <select id="curriculumModuleFilter" class="form-select">
+                <option value="all">All 10 Modules</option>
+              </select>
+              <select id="curriculumStatusFilter" class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="completed">Completed Only</option>
+                <option value="pending">Pending Only</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Source Traceability Overview Card -->
+          <div class="card pdf-sources-overview-card mb-4">
+            <h3>Authoritative Source Documents</h3>
+            <div class="sources-comparison-grid">
+              <div class="source-card">
+                <div class="source-header">
+                  <span class="source-tag tag-pdf1">Source PDF 1</span>
+                  <span class="badge">6 Months Program</span>
+                </div>
+                <h4>Azure Data Engineering</h4>
+                <p><strong>Organization:</strong> GoOnlineTrainings (19 pages)</p>
+                <p><strong>Coverage:</strong> Azure Cloud, Storage Accounts, ADLS Gen2, Azure Data Factory (ADF), Data Flow Transformations, SCD Types, Databricks & PySpark, Delta Lake, Azure Synapse Analytics MPP, SQL Server Engine & T-SQL, Python, NumPy, Pandas, EDA.</p>
+              </div>
+              <div class="source-card">
+                <div class="source-header">
+                  <span class="source-tag tag-pdf2">Source PDF 2</span>
+                  <span class="badge">3 Months Program</span>
+                </div>
+                <h4>Data Analytics Using Power BI</h4>
+                <p><strong>Organization:</strong> GoOnlineTrainings (24 pages)</p>
+                <p><strong>Coverage:</strong> Power BI Desktop, Power Query M Transformations, Power Pivot Dimensional Modeling, DAX Language (Calculated Columns, Measures, CALCULATE, Time Intelligence), Power BI Service, Data Gateways, Row-Level Security (RLS), SSAS Tabular Models, SSIS ETL Pipelines, Data Warehousing.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modules Accordion / List -->
+          <div class="curriculum-modules-container" id="curriculumModulesContainer">
+            <!-- Populated dynamically -->
+          </div>
+        </section>
+
+        <!-- 4. LEARNING CALENDAR VIEW -->
+        <section class="app-view" id="view-calendar">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Learning Calendar & Schedule</h1>
+              <p class="page-subtitle">Track your planned study pace, reschedule lessons, and monitor completion.</p>
+            </div>
+            <div class="calendar-controls">
+              <button class="btn btn-secondary btn-sm" id="calPrevMonthBtn">&larr; Prev</button>
+              <span class="calendar-month-label" id="calendarMonthLabel">October 2026</span>
+              <button class="btn btn-secondary btn-sm" id="calNextMonthBtn">Next &rarr;</button>
+            </div>
+          </div>
+
+          <div class="calendar-layout">
+            <div class="calendar-grid-card">
+              <div class="calendar-weekdays-row">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+              </div>
+              <div class="calendar-days-grid" id="calendarDaysGrid">
+                <!-- Dynamically generated days -->
+              </div>
+            </div>
+
+            <div class="calendar-side-panel card">
+              <h3>Day Schedule Inspector</h3>
+              <div id="calendarSelectedDayInfo">
+                <p class="text-muted">Click any scheduled day on the calendar to view its details or reschedule.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. TOPIC LIBRARY VIEW -->
+        <section class="app-view" id="view-library">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Curriculum Topic Library</h1>
+              <p class="page-subtitle">Categorized index of all 60 core data engineering and analytics topics.</p>
+            </div>
+            <div class="search-input-wrapper">
+              <input type="text" id="libraryFilterInput" class="form-input" placeholder="Filter topics by keyword...">
+            </div>
+          </div>
+
+          <div class="category-pills-row" id="libraryCategoryPills">
+            <button class="cat-pill active" data-cat="all">All Topics (60)</button>
+            <button class="cat-pill" data-cat="sql">SQL & T-SQL</button>
+            <button class="cat-pill" data-cat="dwh">Data Warehousing</button>
+            <button class="cat-pill" data-cat="python">Python & EDA</button>
+            <button class="cat-pill" data-cat="azure">Azure Cloud & ADF</button>
+            <button class="cat-pill" data-cat="spark">Databricks & Spark</button>
+            <button class="cat-pill" data-cat="synapse">Synapse Analytics</button>
+            <button class="cat-pill" data-cat="powerbi">Power BI & DAX</button>
+            <button class="cat-pill" data-cat="ssas">SSAS & SSIS</button>
+          </div>
+
+          <div class="topic-cards-grid" id="topicLibraryGrid">
+            <!-- Dynamically populated cards -->
+          </div>
+        </section>
+
+        <!-- 6. NOTES & KNOWLEDGE BASE VIEW -->
+        <section class="app-view" id="view-notes">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Personal Knowledge Base</h1>
+              <p class="page-subtitle">All your personal study notes, snippets, and takeaways organized in one place.</p>
+            </div>
+            <div class="notes-header-actions">
+              <button class="btn btn-outline btn-sm" id="exportAllNotesBtn">Export All Notes (Markdown)</button>
+            </div>
+          </div>
+
+          <div class="notes-vault-layout">
+            <div class="notes-sidebar-list" id="notesVaultSidebar">
+              <!-- List of days with notes -->
+            </div>
+            <div class="notes-main-viewer card" id="notesVaultViewer">
+              <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <h3>Select a lesson from the left</h3>
+                <p>Or open any day from the curriculum to add personal study notes.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. REVISION CENTRE VIEW -->
+        <section class="app-view" id="view-revision">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Spaced Repetition Revision Centre</h1>
+              <p class="page-subtitle">Strengthen long-term retention with scheduled intervals (1, 3, 7, 14, 30 days).</p>
+            </div>
+          </div>
+
+          <div class="revision-stats-row">
+            <div class="card stat-card-compact">
+              <div class="stat-number text-warning" id="revDueCount">0</div>
+              <div class="stat-name">Due for Review Today</div>
+            </div>
+            <div class="card stat-card-compact">
+              <div class="stat-number text-success" id="revCompletedCount">0</div>
+              <div class="stat-name">Completed Reviews</div>
+            </div>
+            <div class="card stat-card-compact">
+              <div class="stat-number text-primary" id="revTotalTracked">0</div>
+              <div class="stat-name">In Revision Schedule</div>
+            </div>
+          </div>
+
+          <div class="revision-cards-list mt-4" id="revisionCardsList">
+            <!-- Dynamically populated spaced repetition cards -->
+          </div>
+        </section>
+
+        <!-- 8. PRACTICE & QUIZZES VIEW -->
+        <section class="app-view" id="view-quizzes">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Practice & Quiz Performance Hub</h1>
+              <p class="page-subtitle">Track your accuracy across all 60 PDF-grounded daily knowledge checks.</p>
+            </div>
+          </div>
+
+          <div class="quiz-overview-grid">
+            <div class="card">
+              <h3>Overall Quiz Accuracy</h3>
+              <div class="huge-stat" id="hubQuizAverage">0%</div>
+              <p class="text-muted">Calculated across all answered daily knowledge check questions.</p>
+            </div>
+            <div class="card">
+              <h3>Quizzes Completed</h3>
+              <div class="huge-stat" id="hubQuizCompletedCount">0 / 60</div>
+              <p class="text-muted">Daily quizzes completed with a passing score (&gt;= 66%).</p>
+            </div>
+          </div>
+
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>All 60 Daily Assessments</h3>
+            </div>
+            <div class="quizzes-table-container">
+              <table class="data-table" id="quizzesDataTable">
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>Module</th>
+                    <th>Topic</th>
+                    <th>PDF Source</th>
+                    <th>Status</th>
+                    <th>Score</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="quizzesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. INTERVIEW PREPARATION VIEW -->
+        <section class="app-view" id="view-interviews">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Technical Interview Question Hub</h1>
+              <p class="page-subtitle">Curated question bank covering SQL, Azure ADF, Databricks, Synapse, and Power BI.</p>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="window.startMockInterviewRandom()">
+                Start Random Mock Interview
+              </button>
+            </div>
+          </div>
+
+          <div class="interview-filter-bar">
+            <input type="text" id="interviewSearchInput" class="form-input" placeholder="Search interview questions by keyword...">
+            <select id="interviewDifficultyFilter" class="form-select">
+              <option value="all">All Difficulties</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+
+          <div class="interview-hub-grid" id="interviewHubGrid">
+            <!-- Populated with interview questions -->
+          </div>
+        </section>
+
+        <!-- 10. PROJECTS & PORTFOLIO VIEW -->
+        <section class="app-view" id="view-projects">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Hands-On Projects & Portfolio</h1>
+              <p class="page-subtitle">Four production-grade portfolio projects explicitly grounded in the two course PDFs.</p>
+            </div>
+          </div>
+
+          <div class="projects-list-container" id="projectsContainer">
+            <!-- Dynamically populated portfolio projects -->
+          </div>
+        </section>
+
+        <!-- 11. BOOKMARKS & RESOURCES VIEW -->
+        <section class="app-view" id="view-bookmarks">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Bookmarks & Saved Resources</h1>
+              <p class="page-subtitle">Quickly jump back to your saved days, tutorials, and interview questions.</p>
+            </div>
+          </div>
+
+          <div class="bookmarks-grid" id="bookmarksGrid">
+            <!-- Populated dynamically -->
+          </div>
+        </section>
+
+        <!-- 12. PROGRESS ANALYTICS VIEW -->
+        <section class="app-view" id="view-analytics">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Learning Progress Analytics</h1>
+              <p class="page-subtitle">Real-time metrics calculated from your actual study records and quiz attempts.</p>
+            </div>
+            <div>
+              <button class="btn btn-outline btn-sm" id="exportProgressReportBtn">Export Progress Report</button>
+            </div>
+          </div>
+
+          <div class="analytics-cards-grid">
+            <div class="card">
+              <h3>Curriculum Completion by Module</h3>
+              <div class="module-progress-bars" id="analyticsModuleBars"></div>
+            </div>
+            <div class="card">
+              <h3>Study Habits & Velocity</h3>
+              <div class="habit-stats-list">
+                <div class="stat-item">
+                  <span class="label">Current Streak:</span>
+                  <strong id="analyticsStreak">0 days</strong>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Total Study Time:</span>
+                  <strong id="analyticsStudyHours">0.0 hours</strong>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Completed Lessons:</span>
+                  <strong id="analyticsCompletedDays">0 of 60</strong>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Estimated Completion Date:</span>
+                  <strong id="analyticsEstimatedDate">Calculating...</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. SETTINGS & DATA BACKUP VIEW -->
+        <section class="app-view" id="view-settings">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Settings & Data Management</h1>
+              <p class="page-subtitle">Configure your learning preferences, export full JSON backups, and restore data.</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Left: Preferences -->
+            <div class="card">
+              <h3>Learning Preferences</h3>
+              <div class="form-group mt-3">
+                <label class="form-label">Explanation Language Preference:</label>
+                <select id="settingLanguage" class="form-select">
+                  <option value="English">Simple English (Friendly & Clear)</option>
+                  <option value="Hinglish">Conversational Hinglish</option>
+                  <option value="Hindi">Devanagari Hindi</option>
+                </select>
+                <span class="form-hint">Used by the AI Tutor and resource recommenders.</span>
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Explanation Depth Mode:</label>
+                <select id="settingLevel" class="form-select">
+                  <option value="beginner">Beginner Friendly (Analogy-Driven)</option>
+                  <option value="advanced">Advanced Depth (Production Architecture)</option>
+                </select>
+              </div>
+
+              <div class="form-group mt-3">
+                <label class="form-label">Daily Study Target:</label>
+                <select id="settingStudyGoal" class="form-select">
+                  <option value="2">2 Hours / Day</option>
+                  <option value="3" selected>3 Hours / Day</option>
+                  <option value="4">4 Hours / Day</option>
+                  <option value="5">5 Hours / Day</option>
+                </select>
+              </div>
+
+              <button class="btn btn-primary mt-3" id="saveSettingsBtn">Save Preferences</button>
+            </div>
+
+            <!-- Right: Backup & Restore -->
+            <div class="card">
+              <h3>Data Backup & Persistence</h3>
+              <p class="text-muted">All progress, completed lessons, notes, and quiz history are stored locally in your browser session.</p>
+
+              <div class="backup-actions-box mt-3">
+                <button class="btn btn-success btn-block" id="exportBackupJsonBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Export Complete Backup (JSON)
+                </button>
+                <p class="form-hint">Download a single portable JSON file with all your notes, progress, and bookmarks.</p>
+
+                <hr class="divider">
+
+                <label class="form-label">Restore from JSON Backup:</label>
+                <input type="file" id="importBackupFileInput" accept=".json" class="file-input">
+                <button class="btn btn-secondary btn-block mt-2" id="importBackupBtn">
+                  Upload & Restore Backup
+                </button>
+
+                <hr class="divider">
+
+                <div class="danger-zone">
+                  <h4>Danger Zone</h4>
+                  <p class="small-text text-danger">Reset all completed lessons, quiz scores, and clear local progress.</p>
+                  <button class="btn btn-danger btn-sm" id="resetProgressBtn">Reset All Learning Data</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Contextual AI Tutor Slide-out Drawer -->
+  <aside class="ai-drawer" id="aiDrawer">
+    <div class="ai-drawer-header">
+      <div class="ai-header-title">
+        <span class="ai-sparkle">✨</span>
+        <div>
+          <h3>AeroLearn AI Tutor</h3>
+          <span class="ai-context-tag" id="aiDrawerContextTag">Context: Day 1</span>
+        </div>
+      </div>
+      <button class="icon-btn" id="closeAiDrawerBtn" title="Close AI Assistant">&times;</button>
+    </div>
+
+    <!-- Quick Action Chips -->
+    <div class="ai-quick-chips">
+      <button class="chip" onclick="window.sendQuickPrompt('Explain this topic more simply with a real-life analogy')">Simpler Analogy</button>
+      <button class="chip" onclick="window.sendQuickPrompt('What are the top 3 interview questions on this topic?')">Top 3 Interview Qs</button>
+      <button class="chip" onclick="window.sendQuickPrompt('Explain common beginner mistakes to avoid')">Common Traps</button>
+      <button class="chip" onclick="window.sendQuickPrompt('How is this concept used in a real production environment?')">Production Example</button>
+    </div>
+
+    <!-- AI Messages History -->
+    <div class="ai-chat-body" id="aiChatBody">
+      <div class="chat-msg msg-ai">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">
+          <p>Hello! I am your personal tutor grounded strictly in your <strong>Azure Data Engineering</strong> and <strong>Power BI Analytics</strong> curriculum.</p>
+          <p>Ask me any question about the current topic, request simple explanations, or click any chip above.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Input Box -->
+    <div class="ai-input-wrapper">
+      <div class="ai-input-controls">
+        <select id="aiLangSelect" class="form-select-sm">
+          <option value="English">English</option>
+          <option value="Hinglish">Hinglish</option>
+          <option value="Hindi">Hindi</option>
+        </select>
+        <span class="ai-hint-text">Grounded in Course PDFs</span>
+      </div>
+      <div class="ai-input-row">
+        <textarea id="aiUserPrompt" class="ai-textarea" rows="2" placeholder="Ask about this topic or request clarification..."></textarea>
+        <button class="btn btn-primary btn-icon-only" id="sendAiPromptBtn" title="Send Question">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Resource Finder Modal -->
+  <div class="modal-overlay" id="resourceFinderModal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔍 Dynamic Resource Finder</h3>
+        <button class="icon-btn" onclick="window.closeResourceFinder()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Search for verified English, Hindi, or Hinglish video tutorials, documentation, and sample code for any specific syllabus topic.</p>
+        <div class="modal-input-row mt-3">
+          <input type="text" id="rfTopicInput" class="form-input" placeholder="e.g. SCD Type 2, Azure Data Factory Copy Activity, DAX CALCULATE...">
+          <button class="btn btn-primary" id="rfSearchBtn">Search Resources</button>
+        </div>
+        <div class="rf-results-container mt-3" id="rfResultsContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Mock Interview Modal -->
+  <div class="modal-overlay" id="mockInterviewModal" style="display:none;">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <span class="badge badge-accent">Mock Interview Simulator</span>
+          <h3 id="mockModalTitle">Interview Practice</h3>
+        </div>
+        <button class="icon-btn" onclick="window.closeMockInterview()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="mock-question-box">
+          <div class="mock-q-meta" id="mockQDifficulty">Level: Intermediate</div>
+          <h4 id="mockQText">How does Azure Data Factory handle incremental loads?</h4>
+        </div>
+
+        <div class="mock-answer-section mt-3">
+          <label class="form-label">Type your answer below (Simulate a live interview):</label>
+          <textarea id="mockUserAnswer" class="mock-textarea" rows="4" placeholder="Structure your answer: 1. Core concept, 2. How it works, 3. Production example..."></textarea>
+          <button class="btn btn-primary mt-2" id="evaluateMockBtn">Submit for AI Evaluation & Rubric</button>
+        </div>
+
+        <!-- Evaluation Results Container -->
+        <div class="mock-eval-result mt-3" id="mockEvalResult" style="display:none;">
+          <!-- Dynamically populated evaluation score, rubric, model answer -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Entry -->
+  <script src="app.js"></script>
+</body>
+</html>
