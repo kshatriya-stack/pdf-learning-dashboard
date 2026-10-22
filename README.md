@@ -75,7 +75,33 @@ Open **`http://localhost:3001`** in your browser.
 
 ---
 
+## 🌐 Deploy to Render (Cloud Hosting)
+
+This repository includes a preconfigured `render.yaml` Blueprint specification for 1-click zero-configuration deployment to [Render](https://render.com).
+
+### Step-by-Step Deployment Guide
+1. Log in to your [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** (top right) and choose **Web Service**.
+3. Select **Build and deploy from a Git repository**, then choose `kshatriya-stack/pdf-learning-dashboard`.
+4. Fill in or confirm the following settings:
+   - **Name**: `pdf-learning-dashboard`
+   - **Region**: Any region (e.g., `Oregon (US West)` or `Frankfurt (EU)`)
+   - **Branch**: `main`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `node server.js`
+   - **Instance Type**: `Free`
+5. *(Optional for Live Generative AI)* In **Environment Variables**:
+   - `GEMINI_API_KEY`: `your_gemini_api_key`
+   - `GEMINI_MODEL`: `gemini-flash-lite-latest`
+   *(Note: The application includes a self-contained fallback system that functions with full curriculum grounding even without an API key).*
+6. Click **Deploy Web Service**.
+7. In 1–2 minutes, Render will assign you a live production URL:
+   `https://pdf-learning-dashboard.onrender.com`
+
+---
+
 ## 🔒 Security & Privacy Notice
-- API keys are stored exclusively in `.env` and loaded on the server side.
+- API keys are stored exclusively in `.env` or Render environment variables and loaded on the server side.
 - No secret keys are embedded in frontend HTML or JavaScript.
-- `.env` is listed in `.gitignore` to prevent leaks.
+- `.env` is listed in `.gitignore` to prevent secret leaks.

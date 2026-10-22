@@ -6,6 +6,7 @@
   "description": "AI-Powered, PDF-Grounded Daily Learning Dashboard for Azure Data Engineering & Power BI Analytics",
   "scripts": {
     "start": "node server.js",
+    "build": "node generate_curriculum.js",
     "dev": "node --watch server.js"
   },
   "engines": {

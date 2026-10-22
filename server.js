@@ -485,11 +485,12 @@ You should now be able to: **${exp.whatYouShouldBeAbleToDo}**
 }
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
+  const curr = getCurriculumData();
   console.log(`=======================================================`);
   console.log(`🚀 PDF-Grounded Daily Learning Dashboard is running!`);
-  console.log(`🌐 Local URL: http://localhost:${PORT}`);
-  console.log(`📚 Modules: ${curriculumData?.modules?.length || 0} | Days: ${curriculumData?.days?.length || 0}`);
+  console.log(`🌐 Local URL: http://0.0.0.0:${PORT}`);
+  console.log(`📚 Modules: ${curr?.modules?.length || 0} | Days: ${curr?.days?.length || 0}`);
   console.log(`🤖 AI Status: ${geminiClient ? 'Active (Gemini Flash Lite)' : 'Offline / Standalone Fallback Ready'}`);
   console.log(`=======================================================`);
 });

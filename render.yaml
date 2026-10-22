@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: pdf-learning-dashboard
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && node generate_curriculum.js
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_MODEL
+        value: gemini-flash-lite-latest
+      - key: GEMINI_API_KEY
+        sync: false
