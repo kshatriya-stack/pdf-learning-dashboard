@@ -918,6 +918,500 @@ const topicBlueprints = [
   }
 ];
 
+// Helper function to return realistic code implementations for each specific day
+function getRealisticCodeSnippet(dayNum, title, concepts) {
+  if (dayNum === 1) {
+    return {
+      language: "sql",
+      title: "Creating Database with Storage Engine File Architecture",
+      code: `-- SQL Server Physical Architecture: Data (.mdf) and Log (.ldf) Allocation
+CREATE DATABASE CorporateDW
+ON PRIMARY (
+    NAME = CorporateDW_Data,
+    FILENAME = 'C:\\SQLData\\CorporateDW.mdf',
+    SIZE = 50MB,
+    MAXSIZE = 5GB,
+    FILEGROWTH = 64MB -- 64MB prevents VLF fragmentation
+)
+LOG ON (
+    NAME = CorporateDW_Log,
+    FILENAME = 'C:\\SQLLog\\CorporateDW.ldf',
+    SIZE = 25MB,
+    MAXSIZE = 1GB,
+    FILEGROWTH = 32MB
+);
+GO
+-- Inspect allocated 8KB pages and filegroups
+SELECT name, physical_name, size * 8 / 1024 AS Size_MB, growth, is_percent_growth 
+FROM sys.database_files;`,
+      explanation: "Configures physical .mdf data pages and .ldf transaction log files with fixed megabyte growth to avoid Virtual Log File (VLF) fragmentation."
+    };
+  } else if (dayNum === 2) {
+    return {
+      language: "sql",
+      title: "Enforcing Business Integrity & Relational Data Types",
+      code: `-- Business Integrity Constraints & Optimized Data Types
+CREATE TABLE Sales.DimCustomer (
+    CustomerKey INT IDENTITY(1,1) NOT NULL,
+    CustomerCode VARCHAR(20) NOT NULL,
+    CustomerName NVARCHAR(100) NOT NULL, -- Unicode support for international names
+    EmailAddress VARCHAR(120) NOT NULL,
+    CreditLimit DECIMAL(12,2) DEFAULT 1000.00,
+    IsActive BIT DEFAULT 1,
+    CreatedDate DATETIME2(0) DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_DimCustomer PRIMARY KEY CLUSTERED (CustomerKey),
+    CONSTRAINT UQ_CustomerCode UNIQUE (CustomerCode),
+    CONSTRAINT CK_CreditLimit CHECK (CreditLimit >= 0)
+);`,
+      explanation: "Applies VARCHAR vs NVARCHAR storage optimization alongside PRIMARY KEY, UNIQUE, and CHECK integrity constraints."
+    };
+  } else if (dayNum === 3) {
+    return {
+      language: "sql",
+      title: "Relational Joins, Filtering & Subqueries",
+      code: `-- Complex Relational Join with Filter and Window Aggregation
+SELECT 
+    c.CustomerName,
+    o.OrderID,
+    o.OrderDate,
+    SUM(od.Quantity * od.UnitPrice) AS OrderTotal
+FROM Sales.DimCustomer c
+INNER JOIN Sales.Orders o ON c.CustomerKey = o.CustomerKey
+INNER JOIN Sales.OrderDetails od ON o.OrderID = od.OrderID
+WHERE o.OrderDate >= '2026-01-01'
+GROUP BY c.CustomerName, o.OrderID, o.OrderDate
+HAVING SUM(od.Quantity * od.UnitPrice) > 500
+ORDER BY OrderTotal DESC;`,
+      explanation: "Executes inner joins across customer, header, and line-item tables with HAVING clause filtering."
+    };
+  } else if (dayNum === 4) {
+    return {
+      language: "sql",
+      title: "SQL Window Functions & Common Table Expressions (CTEs)",
+      code: `-- Top 2 Highest Paid Employees per Department using DENSE_RANK() & CTE
+WITH DepartmentSalaries AS (
+    SELECT 
+        EmployeeID,
+        DepartmentID,
+        Salary,
+        DENSE_RANK() OVER (
+            PARTITION BY DepartmentID 
+            ORDER BY Salary DESC
+        ) AS SalaryRank
+    FROM HR.Employees
+)
+SELECT EmployeeID, DepartmentID, Salary, SalaryRank
+FROM DepartmentSalaries
+WHERE SalaryRank <= 2
+ORDER BY DepartmentID, SalaryRank;`,
+      explanation: "Demonstrates PARTITION BY window ranking and CTE encapsulation for analytical reporting."
+    };
+  } else if (dayNum === 5) {
+    return {
+      language: "sql",
+      title: "Clustered & Covered Non-Clustered Indexes with INCLUDE",
+      code: `-- Clustered Index on Primary Key + Covered Index for Search Queries
+CREATE CLUSTERED INDEX CIX_Orders_OrderID ON Sales.Orders(OrderID);
+
+-- Covered index eliminates key lookups by storing TotalAmount in leaf nodes
+CREATE NONCLUSTERED INDEX IX_Orders_Cust_Date 
+ON Sales.Orders(CustomerID, OrderDate)
+INCLUDE (TotalAmount, TaxAmount, ShippingCost);
+GO
+-- Verify index usage via execution plan
+SET STATISTICS IO ON;
+SELECT CustomerID, OrderDate, TotalAmount 
+FROM Sales.Orders 
+WHERE CustomerID = 1450 AND OrderDate >= '2026-01-01';`,
+      explanation: "Creates an index covering the search predicate and output projection to ensure 100% Index Seek without bookmark lookups."
+    };
+  } else if (dayNum === 6) {
+    return {
+      language: "sql",
+      title: "Indexed Materialized View with Schema Binding",
+      code: `-- Materialized Indexed View for Precomputed Aggregate Reporting
+CREATE VIEW Sales.v_CustomerSummary 
+WITH SCHEMABINDING 
+AS
+SELECT 
+    c.CustomerID,
+    COUNT_BIG(*) AS TotalTransactions,
+    SUM(ISNULL(o.TotalAmount, 0)) AS LifetimeSpend
+FROM Sales.Customers c
+INNER JOIN Sales.Orders o ON c.CustomerID = o.CustomerID
+GROUP BY c.CustomerID;
+GO
+-- Materialize the view physically onto disk
+CREATE UNIQUE CLUSTERED INDEX CIX_v_CustomerSummary ON Sales.v_CustomerSummary(CustomerID);`,
+      explanation: "Uses WITH SCHEMABINDING and COUNT_BIG(*) to persist precomputed aggregates on physical pages."
+    };
+  } else if (dayNum === 7) {
+    return {
+      language: "sql",
+      title: "T-SQL Staging, Temp Tables & TRY...CATCH Transactions",
+      code: `-- Safe Staging Data Load with Transactional Error Handling
+DECLARE @RowsProcessed INT = 0;
+BEGIN TRY
+    BEGIN TRANSACTION;
+    
+    -- #Temp table stored in TempDB with statistics
+    CREATE TABLE #StagingDelta (
+        CustomerID INT,
+        Revenue DECIMAL(12,2)
+    );
+
+    INSERT INTO #StagingDelta (CustomerID, Revenue)
+    SELECT CustomerID, SUM(TotalAmount) 
+    FROM Sales.Orders 
+    WHERE Status = 'Pending' 
+    GROUP BY CustomerID;
+
+    UPDATE c
+    SET c.TotalRevenue = c.TotalRevenue + s.Revenue,
+        c.LastUpdated = SYSDATETIME()
+    FROM Sales.Customers c
+    INNER JOIN #StagingDelta s ON c.CustomerID = s.CustomerID;
+
+    SET @RowsProcessed = @@ROWCOUNT;
+    COMMIT TRANSACTION;
+    DROP TABLE #StagingDelta;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+    THROW;
+END CATCH;`,
+      explanation: "Utilizes temporary tables (#local) in TempDB and explicit ACID transaction blocks for high-throughput batch updates."
+    };
+  } else if (dayNum <= 14) {
+    return {
+      language: "sql",
+      title: "Slowly Changing Dimension (SCD Type 2) Upsert Implementation",
+      code: `-- SCD Type 2 Implementation using MERGE & Historical Row Versioning
+MERGE INTO dbo.DimCustomer AS Target
+USING dbo.StagingCustomer AS Source
+ON (Target.CustomerAlternateKey = Source.CustomerID AND Target.IsCurrent = 1)
+WHEN MATCHED AND (Target.CustomerAddress <> Source.CustomerAddress) THEN
+    -- Expire existing record
+    UPDATE SET Target.IsCurrent = 0, Target.EndDate = DATEADD(DAY, -1, CAST(GETDATE() AS DATE));
+
+-- Insert new current version with Surrogate Key
+INSERT INTO dbo.DimCustomer (CustomerAlternateKey, CustomerAddress, StartDate, EndDate, IsCurrent)
+SELECT 
+    s.CustomerID, 
+    s.CustomerAddress, 
+    CAST(GETDATE() AS DATE) AS StartDate, 
+    '9999-12-31' AS EndDate, 
+    1 AS IsCurrent
+FROM dbo.StagingCustomer s
+LEFT JOIN dbo.DimCustomer d 
+    ON s.CustomerID = d.CustomerAlternateKey AND d.IsCurrent = 1
+WHERE d.CustomerAlternateKey IS NULL;`,
+      explanation: "Implements Slowly Changing Dimension Type 2, retaining full audit history with StartDate, EndDate, and IsCurrent flags."
+    };
+  } else if (dayNum <= 20) {
+    return {
+      language: "python",
+      title: "Python Data Pipeline Object & Custom File Ingestion Module",
+      code: `import json
+import logging
+from dataclasses import dataclass
+from typing import List, Dict, Any
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+@dataclass
+class CustomerRecord:
+    customer_id: int
+    name: str
+    active: bool
+    email: str
+
+class PipelineIngestionEngine:
+    """Enterprise Data Ingestion Engine with Generator Streaming"""
+    def __init__(self, buffer_size: int = 1000):
+        self.buffer_size = buffer_size
+
+    def stream_json_records(self, file_path: str):
+        """Memory-efficient generator yielding records line by line"""
+        with open(file_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    data = json.loads(line)
+                    yield CustomerRecord(**data)
+
+    def process_batch(self, records: List[CustomerRecord]) -> Dict[str, Any]:
+        valid = [r for r in records if "@" in r.email and r.active]
+        logging.info("Batch processed. Valid records: %d", len(valid))
+        return {"total": len(records), "valid_count": len(valid)}
+
+if __name__ == "__main__":
+    engine = PipelineIngestionEngine()
+    print("Python Data Engineering Engine initialized.")`,
+      explanation: "Applies Python OOP classes, generators (yield) for memory-safe streaming, and dataclasses."
+    };
+  } else if (dayNum <= 26) {
+    return {
+      language: "python",
+      title: "Pandas Data Wrangling, Window Aggregations & Outlier Detection",
+      code: `import pandas as pd
+import numpy as np
+
+# Load and optimize dataframe memory footprint
+df = pd.read_csv("sales_data.csv", parse_dates=["OrderDate"])
+df["StoreCategory"] = df["StoreCategory"].astype("category")
+
+# Rolling 7-day Moving Average Revenue per Store
+df["Revenue_7D_MA"] = (
+    df.groupby("StoreID")["Revenue"]
+    .transform(lambda x: x.rolling(window=7, min_periods=1).mean())
+)
+
+# IQR Outlier Detection
+Q1 = df["Revenue"].quantile(0.25)
+Q3 = df["Revenue"].quantile(0.75)
+IQR = Q3 - Q1
+outliers = df[(df["Revenue"] < (Q1 - 1.5 * IQR)) | (df["Revenue"] > (Q3 + 1.5 * IQR))]
+
+print(f"Dataset shape: {df.shape} | Outliers identified: {len(outliers)}")
+print(df.head(5))`,
+      explanation: "Executes categorical optimization, rolling window transformations, and statistical IQR anomaly detection in Pandas."
+    };
+  } else if (dayNum <= 30) {
+    return {
+      language: "python",
+      title: "Azure ADLS Gen2 Hierarchical Namespace Ingestion",
+      code: `from azure.storage.filedatalake import DataLakeServiceClient
+from azure.identity import DefaultAzureCredential
+
+# Secure connection using Managed Identity (No hardcoded keys)
+account_url = "https://enterprisestorageadls.dfs.core.windows.net"
+service_client = DataLakeServiceClient(account_url=account_url, credential=DefaultAzureCredential())
+
+file_system_client = service_client.get_file_system_client(file_system="lakehouse")
+directory_client = file_system_client.get_directory_client("raw/sales/2026/10")
+
+# Upload payload with POSIX ACL permissions
+file_client = directory_client.create_file("daily_orders.parquet")
+with open("daily_orders.parquet", "rb") as data:
+    file_client.append_data(data, offset=0, length=data.seek(0, 2))
+    file_client.flush_data(data.tell())
+
+print("File successfully committed to ADLS Gen2 container.")`,
+      explanation: "Interacts with Azure Data Lake Storage Gen2 hierarchical directories using DefaultAzureCredential."
+    };
+  } else if (dayNum <= 40) {
+    return {
+      language: "json",
+      title: "Azure Data Factory (ADF) Dynamic Pipeline Specification",
+      code: `{
+  "name": "Pipeline_IncrementalSalesCopy",
+  "properties": {
+    "parameters": {
+      "SourceFolder": { "type": "String", "defaultValue": "raw/transactions" },
+      "ExecutionDate": { "type": "String", "defaultValue": "2026-10-22" }
+    },
+    "activities": [
+      {
+        "name": "LookupWatermark",
+        "type": "Lookup",
+        "dataset": { "referenceName": "SQL_WatermarkTable", "type": "DatasetReference" }
+      },
+      {
+        "name": "CopyDeltaData",
+        "type": "Copy",
+        "dependsOn": [{ "activity": "LookupWatermark", "dependencyConditions": ["Succeeded"] }],
+        "source": { "type": "SqlSource", "sqlReaderQuery": "@concat('SELECT * FROM Orders WHERE LastModified > \\'', activity(\\'LookupWatermark\\').output.firstRow.LastLoadedDate, '\\'')" },
+        "sink": { "type": "ParquetSink" }
+      }
+    ]
+  }
+}`,
+      explanation: "ADF pipeline specification showing parameterized Linked Services, Lookup activities, and incremental Copy Activity with watermark comparison."
+    };
+  } else if (dayNum <= 46) {
+    return {
+      language: "python",
+      title: "Azure Databricks PySpark & Delta Lake ACID Upsert (MERGE)",
+      code: `from pyspark.sql.functions import col, current_timestamp
+from delta.tables import DeltaTable
+
+# Read incoming streaming micro-batch from Silver layer
+silver_stream = (
+    spark.readStream.format("delta")
+    .table("lakehouse.silver_transactions")
+)
+
+# Target Delta Table in Lakehouse Gold Layer
+gold_table = DeltaTable.forName(spark, "lakehouse.gold_daily_sales")
+
+def upsert_to_delta(micro_batch_df, batch_id):
+    """Executes ACID MERGE INTO ensuring idempotency"""
+    (
+        gold_table.alias("target")
+        .merge(
+            micro_batch_df.alias("source"),
+            "target.TransactionID = source.TransactionID AND target.StoreKey = source.StoreKey"
+        )
+        .whenMatchedUpdateAll()
+        .whenNotMatchedInsertAll()
+        .execute()
+    )
+
+query = (
+    silver_stream.writeStream
+    .foreachBatch(upsert_to_delta)
+    .option("checkpointLocation", "/mnt/lakehouse/checkpoints/gold_sales")
+    .start()
+)`,
+      explanation: "PySpark Delta Lake streaming pipeline executing an ACID MERGE INTO (Upsert) into the Gold analytics layer."
+    };
+  } else if (dayNum <= 50) {
+    return {
+      language: "sql",
+      title: "Azure Synapse Analytics MPP Dedicated SQL Pool Table Distribution",
+      code: `-- Azure Synapse Dedicated SQL Pool: HASH Distributed Fact Table
+CREATE TABLE Analytics.FactOnlineSales (
+    SalesOrderNumber VARCHAR(25) NOT NULL,
+    CustomerKey INT NOT NULL,
+    ProductKey INT NOT NULL,
+    OrderDateKey INT NOT NULL,
+    SalesAmount DECIMAL(18,4) NOT NULL
+)
+WITH (
+    DISTRIBUTION = HASH(CustomerKey), -- 60 distribution boundaries
+    CLUSTERED COLUMNSTORE INDEX,
+    PARTITION (OrderDateKey RANGE RIGHT FOR VALUES (20250101, 20260101, 20270101))
+);
+GO
+-- Replicated distribution for Dimension tables to eliminate Data Movement Service (DMS) shuffle
+CREATE TABLE Analytics.DimStore (
+    StoreKey INT NOT NULL,
+    StoreName NVARCHAR(100) NOT NULL
+)
+WITH (
+    DISTRIBUTION = REPLICATE,
+    CLUSTERED INDEX (StoreKey)
+);`,
+      explanation: "Applies Synapse MPP 60-distribution architecture: HASH distribution for Fact tables and REPLICATE for Dimensions."
+    };
+  } else if (dayNum <= 56) {
+    return {
+      language: "sql",
+      title: "Power BI DAX: CALCULATE & Time Intelligence Formulas",
+      code: `-- DAX Measures for Executive Business Intelligence
+
+-- 1. Base Revenue Measure
+Total Sales = SUM(FactSales[SalesAmount])
+
+-- 2. DAX CALCULATE overriding filter context
+Total Sales All Regions = 
+CALCULATE(
+    [Total Sales], 
+    ALL(DimGeography[Region])
+)
+
+-- 3. Time Intelligence Year-To-Date
+Total Sales YTD = 
+TOTALYTD(
+    [Total Sales], 
+    DimDate[FullDateAlternateKey]
+)
+
+-- 4. Period-over-Period Growth %
+YoY Sales Growth % = 
+VAR CurrentSales = [Total Sales YTD]
+VAR PriorYearSales = CALCULATE([Total Sales YTD], SAMEPERIODLASTYEAR(DimDate[FullDateAlternateKey]))
+RETURN
+    DIVIDE(CurrentSales - PriorYearSales, PriorYearSales, 0)`,
+      explanation: "High-performance DAX measures using CALCULATE, ALL, TOTALYTD, and SAMEPERIODLASTYEAR with variable optimization."
+    };
+  } else {
+    return {
+      language: "sql",
+      title: "Power BI Dynamic Row-Level Security (RLS) & SSAS Tabular Definition",
+      code: `-- Dynamic Row-Level Security (RLS) DAX Expression in Power BI Desktop
+-- Applied to the UserAccess table in Security Roles
+[UserEmail] = USERPRINCIPALNAME()
+
+-- SSIS Automated Command Line Execution via DTExec
+/*
+dtexec.exe /f "C:\\SSISPackages\\EnterpriseETL.dtsx" ^
+           /conf "C:\\SSISPackages\\ProductionConfig.dtsConfig" ^
+           /rep EWCDI
+*/`,
+      explanation: "Dynamic RLS role enforcement using USERPRINCIPALNAME() alongside SSIS batch deployment commands."
+    };
+  }
+}
+
+// Helper to construct downloadable comprehensive study guide text for each day
+function buildStudyGuideText(d) {
+  const sources = (d.pdfReferences || []).map(r => `${r.pdf} (page ${r.page})`).join(', ');
+  const concepts = (d.topicExplanation?.coreConcepts || []).map((c, i) => `  ${i + 1}. ${c}`).join('\n');
+  const objectives = (d.learningObjectives || []).map((o, i) => `  [ ] ${o}`).join('\n');
+  const code = d.codeExample?.code || '-- Practice script';
+  const iq = (d.interviewQuestions || []).map((q, i) => `  Q${i + 1} (${q.level || 'Intermediate'}): ${q.question}\n  Model Answer: ${q.answer || q.conciseAnswer}`).join('\n\n');
+
+  return `================================================================================
+AEROLEARN OS | DAILY LEARNING OPERATING SYSTEM
+DAY ${d.day}: ${d.title}
+Module: ${d.moduleName}
+Authoritative PDF Citation: ${sources}
+Recommended Duration: ${d.duration}
+================================================================================
+
+1. WHAT IS THIS TOPIC & WHY IT MATTERS:
+--------------------------------------------------------------------------------
+${d.topicExplanation?.whatIsIt || d.title}
+
+Why You Must Learn It:
+${d.topicExplanation?.whyLearnIt || 'Core enterprise data engineering and analytics competency.'}
+
+2. THE 80/20 RULE (KEY PRINCIPLES TO RETAIN):
+--------------------------------------------------------------------------------
+> ${d.the8020Knowledge}
+
+3. MEASURABLE LEARNING OBJECTIVES:
+--------------------------------------------------------------------------------
+${objectives}
+
+4. CORE SYLLABUS MECHANICS:
+--------------------------------------------------------------------------------
+${concepts}
+
+5. IMPORTANT TECHNICAL SPECIFICATIONS:
+--------------------------------------------------------------------------------
+${d.topicExplanation?.importantTechnicalDetails || 'Syntax and execution architecture.'}
+
+6. WHAT EXPERTS UNDERSTAND (PRODUCTION ARCHITECTURE & SECRETS):
+--------------------------------------------------------------------------------
+${d.whatExpertsUnderstand}
+
+7. REAL-WORLD PRODUCTION APPLICATION:
+--------------------------------------------------------------------------------
+${d.topicExplanation?.realWorldApplication || 'Implemented in enterprise data pipelines.'}
+
+8. COMMON PITFALLS & HOW TO AVOID THEM:
+--------------------------------------------------------------------------------
+WARNING: ${d.topicExplanation?.commonMistakes || 'Avoid unindexed scans and unhandled nulls.'}
+
+9. PRACTICAL CODE / SCRIPT IMPLEMENTATION:
+--------------------------------------------------------------------------------
+${code}
+
+10. INTERVIEW PREPARATION (HIGH-YIELD QUESTIONS):
+--------------------------------------------------------------------------------
+${iq}
+
+11. TODAY'S COMPLETION CRITERION:
+--------------------------------------------------------------------------------
+Deliverable: ${d.deliverable || 'Hands-on validation'}
+Self-Check: ${d.topicExplanation?.whatYouShouldBeAbleToDo || 'Configure and test the system.'}
+================================================================================
+Generated strictly from Azure Data Engineering & Power BI Analytics Official Syllabi.
+`;
+}
+
 // Generate comprehensive full day structures for days 4 to 60
 const days = [...rawDays];
 
@@ -925,6 +1419,8 @@ for (let i = 0; i < topicBlueprints.length; i++) {
   const bp = topicBlueprints[i];
   const dayNum = bp.day;
   const modObj = curriculum.modules.find(m => m.id === bp.mod);
+
+  const codeObj = getRealisticCodeSnippet(dayNum, bp.title, bp.concepts);
 
   const dayObj = {
     day: dayNum,
@@ -960,28 +1456,37 @@ for (let i = 0; i < topicBlueprints.length; i++) {
     },
     resources: [
       {
-        title: `${bp.title} - Complete Masterclass Tutorial`,
-        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(bp.title + ' tutorial in english')}`,
+        title: `${bp.title} - Complete Masterclass Video (English)`,
+        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(bp.title + ' tutorial in english step by step')}`,
         type: "video",
         language: "English",
         cost: "free",
         why: "Visual step-by-step technical demonstration of core concepts."
       },
       {
-        title: `${bp.title} Explained in Hindi`,
-        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(bp.title + ' in hindi tutorial')}`,
+        title: `${bp.title} Explained in Hindi / Hinglish`,
+        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(bp.title + ' in hindi full tutorial')}`,
         type: "video",
         language: "Hindi",
         cost: "free",
         why: "Accessible explanation in simple Hindi/Hinglish breaking down the fundamentals."
       },
       {
-        title: `Official Documentation: ${bp.title}`,
-        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(bp.title + ' official guide')}`,
+        title: `Official Technical Documentation: ${bp.title}`,
+        url: `https://learn.microsoft.com/en-us/search/?terms=${encodeURIComponent(bp.title)}`,
         type: "docs",
         language: "English",
         cost: "free",
-        why: "Authoritative reference specification from primary technical documentation."
+        why: "Authoritative reference specification from primary enterprise technical documentation."
+      },
+      {
+        title: `Day ${dayNum} Comprehensive Text Study Guide (.txt)`,
+        url: `#text-guide-day-${dayNum}`,
+        type: "text",
+        language: "English",
+        cost: "free",
+        why: "Self-contained text study document with syntax, principles, code, and interview prep ready to read and download.",
+        downloadable: true
       }
     ],
     practiceTask: {
@@ -993,12 +1498,7 @@ for (let i = 0; i < topicBlueprints.length; i++) {
       ],
       validation: `Run verification script or query in your environment.`
     },
-    codeExample: {
-      title: `Implementation Pattern for ${bp.title}`,
-      language: dayNum <= 9 ? "sql" : (dayNum <= 26 ? "python" : (dayNum <= 50 ? "sql" : (dayNum <= 56 ? "dax" : "json"))),
-      code: `-- Code demonstration for Day ${dayNum}: ${bp.title}\n-- Concepts covered: ${bp.concepts}\n-- Tested and verified in development environment`,
-      explanation: `Line-by-line breakdown demonstrating best practices and error handling.`
-    },
+    codeExample: codeObj,
     interviewQuestions: [
       {
         question: `How does ${bp.concepts.split(',')[0]} work in production and what problem does it solve?`,
@@ -1064,6 +1564,24 @@ for (let i = 0; i < topicBlueprints.length; i++) {
   days.push(dayObj);
 }
 
+// Add downloadable text study guide & complete text resources to all 60 days
+for (const day of days) {
+  day.studyGuideText = buildStudyGuideText(day);
+  
+  // Ensure the text guide resource exists in resources
+  if (!day.resources.some(r => r.type === 'text')) {
+    day.resources.push({
+      title: `Day ${day.day} Comprehensive Text Study Guide (.txt)`,
+      url: `#text-guide-day-${day.day}`,
+      type: "text",
+      language: "English",
+      cost: "free",
+      why: "Self-contained text study document with syntax, principles, code, and interview prep ready to read and download.",
+      downloadable: true
+    });
+  }
+}
+
 curriculum.days = days;
 
 // Output the curriculum manifest to data/curriculum.json
@@ -1074,3 +1592,4 @@ console.log(`Curriculum successfully generated!`);
 console.log(`Total Modules: ${curriculum.modules.length}`);
 console.log(`Total Days: ${curriculum.days.length}`);
 console.log(`Written to: ${outputPath}`);
+

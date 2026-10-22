@@ -311,6 +311,94 @@ function renderOverview() {
 
   // Modules mini list
   renderOverviewModulesList();
+  renderOverviewDaysStrip();
+  renderSidebarDaysList();
+}
+
+// 60-Day Interactive Curriculum Track on Overview
+function renderOverviewDaysStrip() {
+  const container = document.getElementById('overviewDaysStrip');
+  if (!container || !store.curriculum) return;
+
+  const filterMod = document.getElementById('overviewTrackModFilter')?.value || 'all';
+
+  const daysToRender = store.curriculum.days.filter(d => {
+    if (filterMod !== 'all' && d.moduleId !== filterMod) return false;
+    return true;
+  });
+
+  container.innerHTML = daysToRender.map(d => {
+    const isDone = store.userState.completedDays.includes(d.day);
+    const isCurrent = d.day === store.currentDay;
+    let badgeClass = 'day-strip-chip';
+    if (isDone) badgeClass += ' done';
+    if (isCurrent) badgeClass += ' active';
+
+    return `
+      <div class="${badgeClass}" onclick="window.jumpToDay(${d.day})" title="Day ${d.day}: ${escapeHtml(d.title)}">
+        <div class="chip-top">
+          <span class="chip-num">Day ${d.day}</span>
+          ${isDone ? '<span class="chip-check">✓</span>' : ''}
+        </div>
+        <div class="chip-title">${escapeHtml(d.title)}</div>
+        <div class="chip-mod">${d.moduleName.split(':')[0]}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 60-Day Interactive List in Sidebar
+function renderSidebarDaysList() {
+  const container = document.getElementById('sidebarDaysList');
+  if (!container || !store.curriculum) return;
+
+  const activeLabel = document.getElementById('sidebarActiveDayLabel');
+  if (activeLabel) activeLabel.textContent = `Day ${store.currentDay}`;
+
+  container.innerHTML = store.curriculum.days.map(d => {
+    const isDone = store.userState.completedDays.includes(d.day);
+    const isCurrent = d.day === store.currentDay;
+    let cls = 'sidebar-day-item';
+    if (isDone) cls += ' done';
+    if (isCurrent) cls += ' active';
+
+    return `
+      <button class="${cls}" onclick="window.jumpToDay(${d.day})" title="Day ${d.day}: ${escapeHtml(d.title)}">
+        <span class="sb-day-num">D${d.day}</span>
+        <span class="sb-day-name">${escapeHtml(d.title)}</span>
+        ${isDone ? '<span class="sb-check">✓</span>' : ''}
+      </button>
+    `;
+  }).join('');
+}
+
+// Horizontal Day Selector Strip in Today View
+function renderTodayHorizontalStrip() {
+  const container = document.getElementById('todayDaysHorizontalStrip');
+  if (!container || !store.curriculum) return;
+
+  container.innerHTML = store.curriculum.days.map(d => {
+    const isDone = store.userState.completedDays.includes(d.day);
+    const isCurrent = d.day === store.currentDay;
+    let cls = 'horiz-day-chip';
+    if (isDone) cls += ' done';
+    if (isCurrent) cls += ' active';
+
+    return `
+      <button class="${cls}" onclick="window.jumpToDay(${d.day})" title="Day ${d.day}: ${escapeHtml(d.title)}">
+        <span>Day ${d.day}</span>
+        ${isDone ? '<span class="horiz-check">✓</span>' : ''}
+      </button>
+    `;
+  }).join('');
+
+  // Scroll active day chip into visible center
+  setTimeout(() => {
+    const activeChip = container.querySelector('.horiz-day-chip.active');
+    if (activeChip) {
+      activeChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, 100);
 }
 
 function updateOverviewFocusCard(dayData) {
@@ -374,6 +462,9 @@ function renderOverviewModulesList() {
 function renderDayWorkspace(dayData) {
   if (!dayData) return;
 
+  renderTodayHorizontalStrip();
+  renderSidebarDaysList();
+
   document.getElementById('dayPill').textContent = `Day ${dayData.day}`;
   document.getElementById('dayDuration').textContent = dayData.duration;
   document.getElementById('dayModuleName').textContent = dayData.moduleName.split(':')[0];
@@ -409,6 +500,12 @@ function renderDayWorkspace(dayData) {
     bmLabel.textContent = 'Bookmark Day';
   }
 
+  // TAB: TOPIC TEXT STUDY GUIDE & TEXT FILE (.TXT)
+  const textTitle = document.getElementById('textGuideTitle');
+  if (textTitle) textTitle.textContent = `Day ${dayData.day}: Comprehensive Study Guide`;
+  const textDisplay = document.getElementById('dayStudyTxtDisplay');
+  if (textDisplay) textDisplay.textContent = dayData.studyGuideText || `Study Guide for Day ${dayData.day}`;
+
   // TAB 1: CORE STUDY NOTES (Sections A to J)
   const exp = dayData.topicExplanation || {};
   document.getElementById('dayWhatIsIt').textContent = exp.whatIsIt || 'Fundamental data engineering concept.';
@@ -438,6 +535,20 @@ function renderDayWorkspace(dayData) {
   document.getElementById('dayTechDetails').innerHTML = `
     <div class="tech-content">${escapeHtml(exp.importantTechnicalDetails || 'Syntax, schema definition, and engine architecture details.')}</div>
   `;
+
+  // Code Example
+  const codeContent = document.getElementById('dayCodeContent');
+  const codeExp = document.getElementById('dayCodeExplanation');
+  if (codeContent) codeContent.textContent = dayData.codeExample?.code || '-- Code implementation script';
+  if (codeExp) codeExp.textContent = dayData.codeExample?.explanation || '';
+
+  // Hands-on Practice Task
+  const pracInst = document.getElementById('dayPracticeInstructions');
+  if (pracInst) pracInst.textContent = dayData.practiceTask?.instructions || 'Implement the core concept in your local environment.';
+  const pracCrit = document.getElementById('dayPracticeCriteria');
+  if (pracCrit) pracCrit.innerHTML = (dayData.practiceTask?.acceptanceCriteria || ['Working implementation verified']).map(c => `<li>${escapeHtml(c)}</li>`).join('');
+  const pracVal = document.getElementById('dayPracticeValidation');
+  if (pracVal) pracVal.textContent = dayData.practiceTask?.validation || 'Run query or test script.';
 
   // Real-world scenario
   document.getElementById('dayRealWorldApp').textContent = exp.realWorldApplication || 'Deployed in production high-throughput data processing workflows.';
@@ -494,6 +605,7 @@ function renderDayTasksSidebar(dayData) {
 
 function renderDayResources(resources) {
   const container = document.getElementById('dayResourcesGrid');
+  if (!container) return;
   if (resources.length === 0) {
     container.innerHTML = `<div class="empty-state"><p>No external resources loaded. Click "Find More Resources" above.</p></div>`;
     return;
@@ -503,21 +615,105 @@ function renderDayResources(resources) {
     const isHindi = r.language.toLowerCase().includes('hindi') || r.language.toLowerCase().includes('hinglish');
     const pillClass = isHindi ? 'lang-hindi' : 'lang-english';
 
+    if (r.type === 'text' || r.downloadable) {
+      return `
+        <div class="resource-card resource-card-text" data-lang="${r.language}">
+          <div class="resource-top">
+            <span class="resource-lang-pill lang-english">📄 TEXT GUIDE</span>
+            <span class="badge badge-accent">Downloadable .txt</span>
+          </div>
+          <h4 class="resource-title">${escapeHtml(r.title)}</h4>
+          <p class="resource-why">${escapeHtml(r.why)}</p>
+          <div class="d-flex gap-2 mt-auto pt-2">
+            <button class="btn btn-primary btn-sm" onclick="window.downloadCurrentDayTextGuide()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download .txt
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="window.openTextGuideTab()">
+              Read Online &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    if (r.type === 'video') {
+      return `
+        <div class="resource-card" data-lang="${r.language}">
+          <div class="resource-top">
+            <span class="resource-lang-pill ${pillClass}">🎥 ${r.language.toUpperCase()} VIDEO</span>
+            <span class="badge">${r.cost}</span>
+          </div>
+          <h4 class="resource-title">${escapeHtml(r.title)}</h4>
+          <p class="resource-why">${escapeHtml(r.why)}</p>
+          <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm resource-btn">
+            Watch Tutorial on YouTube ↗
+          </a>
+        </div>
+      `;
+    }
+
     return `
       <div class="resource-card" data-lang="${r.language}">
         <div class="resource-top">
-          <span class="resource-lang-pill ${pillClass}">${r.language}</span>
-          <span class="badge">${r.type} &bull; ${r.cost}</span>
+          <span class="resource-lang-pill ${pillClass}">📚 ${r.type.toUpperCase()}</span>
+          <span class="badge">${r.cost}</span>
         </div>
         <h4 class="resource-title">${escapeHtml(r.title)}</h4>
         <p class="resource-why">${escapeHtml(r.why)}</p>
         <a href="${r.url}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm resource-btn">
-          Open Resource &rarr;
+          Open Resource ↗
         </a>
       </div>
     `;
   }).join('');
 }
+
+window.downloadCurrentDayTextGuide = function() {
+  const day = store.currentDay;
+  const dayData = store.currentDayData;
+  const textContent = dayData?.studyGuideText || `Study Guide for Day ${day}`;
+  
+  const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const safeTitle = dayData?.title ? dayData.title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') : 'Study_Guide';
+  a.download = `Day_${day}_${safeTitle}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`Downloaded Day ${day} Text Study Guide (.txt)!`, 'success');
+};
+
+window.copyCurrentDayTextGuide = function() {
+  const dayData = store.currentDayData;
+  const textContent = dayData?.studyGuideText || '';
+  if (textContent) {
+    navigator.clipboard.writeText(textContent);
+    showToast(`Day ${store.currentDay} study guide copied to clipboard!`, 'success');
+  }
+};
+
+window.copyCurrentDayCode = function() {
+  const code = store.currentDayData?.codeExample?.code;
+  if (code) {
+    navigator.clipboard.writeText(code);
+    showToast('Code snippet copied to clipboard!', 'success');
+  }
+};
+
+window.openTextGuideTab = function() {
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.day-tab-pane').forEach(p => p.classList.remove('active'));
+  const tab = document.querySelector('.day-tab[data-tab="tab-textguide"]');
+  const pane = document.getElementById('tab-textguide');
+  if (tab && pane) {
+    tab.classList.add('active');
+    pane.classList.add('active');
+  }
+};
 
 function renderDayQuiz(dayData) {
   const container = document.getElementById('dayQuizList');
@@ -1462,6 +1658,33 @@ function setupGlobalEvents() {
 
   document.getElementById('libraryFilterInput')?.addEventListener('input', () => {
     renderLibraryView();
+  });
+
+  // Overview track module filter
+  document.getElementById('overviewTrackModFilter')?.addEventListener('change', renderOverviewDaysStrip);
+
+  // Focus title quick click
+  document.getElementById('overviewFocusTitle')?.addEventListener('click', () => window.jumpToDay(store.currentDay));
+  document.getElementById('overviewFocusTitle')?.style.setProperty('cursor', 'pointer');
+
+  // Resource language filter chips
+  document.querySelectorAll('.resources-toolbar .filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.resources-toolbar .filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const lang = chip.getAttribute('data-lang');
+      document.querySelectorAll('#dayResourcesGrid .resource-card').forEach(card => {
+        if (lang === 'All') {
+          card.style.display = 'flex';
+        } else if (lang === 'Hindi') {
+          const cLang = card.getAttribute('data-lang') || '';
+          card.style.display = (cLang.includes('Hindi') || cLang.includes('Hinglish')) ? 'flex' : 'none';
+        } else {
+          const cLang = card.getAttribute('data-lang') || '';
+          card.style.display = cLang.includes(lang) ? 'flex' : 'none';
+        }
+      });
+    });
   });
 
   // Settings Save

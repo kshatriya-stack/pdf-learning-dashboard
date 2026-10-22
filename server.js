@@ -116,6 +116,24 @@ app.get('/api/day/:id', (req, res) => {
   res.json(dayData);
 });
 
+// 3b. Download Plain Text Study Guide for Single Day
+app.get('/api/day/:id/text', (req, res) => {
+  if (!curriculumData) {
+    return res.status(503).json({ error: 'Curriculum data not loaded.' });
+  }
+
+  const dayId = parseInt(req.params.id, 10);
+  const dayData = curriculumData.days?.find(d => d.day === dayId);
+  if (!dayData) {
+    return res.status(404).send(`Day ${dayId} not found.`);
+  }
+
+  const textContent = dayData.studyGuideText || `Study Guide for Day ${dayId}: ${dayData.title}`;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="Day_${dayId}_Study_Guide.txt"`);
+  res.send(textContent);
+});
+
 // 4. Global Search across Topics, Notes & Concepts
 app.get('/api/search', (req, res) => {
   const query = (req.query.q || '').toString().toLowerCase().trim();
